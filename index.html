@@ -7,6 +7,11 @@
 			src: url('http://interactivegraphics.ft-static.com/inc/fonts/BentonSansLight.woff') format('woff'),
 		}
 
+		a{
+			display: block;
+			margin-bottom: 50px;
+		}
+
 		.render-canvas{
 			display: none;
 		}
@@ -65,7 +70,7 @@
 						}
 					}).call(resultBar);
 
-		div.append('a').text( function(d){ return 'save ' + d.authoritylabel + filetime + '.png'; } ).attr({
+		div.append('a').html( function(d){ return 'Save: <i>' + d.authoritylabel + filetime + '.png</i>'; } ).attr({
 			'href':function(d){
 				var serializer = new XMLSerializer(),
 			    SVGString = serializer.serializeToString(document.getElementById( d.code )),
