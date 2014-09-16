@@ -1,0 +1,181 @@
+<html>
+<head>
+	<title>static graphics with timestamps</title>
+	<style type="text/css">
+		svg{
+			border:solid 1px #000;
+		}
+	</style>
+	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/rgbcolor.js"></script> 
+	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/StackBlur.js"></script>
+	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+<h1>Static poll graphics with timestamps.</h1>
+<canvas id="render-canvas"></canvas>
+</body>
+<script type="text/javascript">
+	var width = 600, height = 150,
+	margin = { top:20, left:10,bottom:0,right:10}
+	barHeight = 30,
+	barYOffset = 60,
+	backgroundBarColour = '#999',
+	yesColour = '#009',
+	noColour = '#900',
+	tickOverlap = 5,
+	subtitleOffset = 20,
+	axisOffset = barYOffset - 10,
+	axisColour = '#333',
+	valueOffset = 20;
+
+	d3.json('http://bertha.ig.ft.com/republish/publish/ig/0Ak6OnV5xs-BudHpMQU9ENlgzR1VNNDFBZk9iZFlpNnc/basic,fullresults',gotData);
+
+	d3.select('canvas#render-canvas').attr({
+		width:width,
+		height:height
+	});
+
+	var timestamp = d3.time.format("%H:%M - %B %d %Y")(new Date());
+	console.log(timestamp);
+	function gotData(data){
+		var div = d3.select('body').selectAll('div')
+			.data(data.fullresults.filter(function(d){ console.log(d.authoritylabel); return (d.authoritylabel !== null); }))
+			.enter().append('div');
+
+		div.append('svg').attr({
+						'width':width,
+						'height':height,
+						'id':function(d){
+							return d.code;
+						}
+					}).call(resultBar);
+
+		div.append('a').text( function(d){ return 'save ' + d.authoritylabel; } ).attr({
+			'href':'#',
+			'id':function(d){'button-' + d.code} 
+		}).on("click", function(e) {
+		  console.log("saving...",e.code);
+		  d3.event.stopPropagation();
+		});
+	}
+
+	function pct(d){
+		return Math.round(d*1000)/10 + '%';
+	}
+
+	function resultBar(selection){
+		//scale
+		var scale = d3.scale.linear()
+			.domain( [0,1] )
+			.range( [0, width - (margin.left + margin.right)] );
+
+		//set up margins
+		selection = selection.append('g').attr('transform','translate(' + margin.left + ',' + margin.top + ')');
+		
+		//title
+		selection.append('text').text(function(d){
+			return d.authoritylabel;
+		});
+
+		selection.append('text').text(function(d){
+			return pct(d.turnout) + ' (' + d.votestotal + ' votes)';
+		}).attr({
+			'y':subtitleOffset
+		});
+
+		//subtitle
+		//background rect
+		selection.append('rect')
+			.attr({
+				'fill':backgroundBarColour,
+				'stroke':'none',
+				'width':scale(1),
+				'height':barHeight,
+				'y':barYOffset
+			});
+
+		//yes rect
+		selection.append('rect')
+			.attr({
+				'fill':yesColour,
+				'stroke':'none',
+				'width':function(d){ return scale(d.pctyes); },
+				'height':barHeight,
+				'y':barYOffset
+			});
+
+		//no rect
+		selection.append('rect')
+			.attr({
+				'fill':noColour,
+				'stroke':'none',
+				'width':function(d){ return scale(d.pctno); },
+				'height':barHeight,
+				'x':function(d){ return scale(1) - scale(d.pctno); },
+				'y':barYOffset
+			});
+
+		//axis tics
+		selection.append('line')
+			.attr({
+				x1:scale(0.5),
+				y1:barYOffset -tickOverlap,
+				x2:scale(0.5),
+				y2:barYOffset + barHeight + tickOverlap,
+				'stroke-width':2,
+				'stroke':axisColour
+			})
+		//axis labels
+		//YES
+		selection.append('text')
+			.text('YES')
+			.attr({
+				'y':axisOffset
+			})
+		//NO
+		selection.append('text')
+			.text('NO')
+			.attr({
+				'y':axisOffset,
+				'text-anchor':'end',
+				'x':scale(1)
+			});
+		
+		//50%
+		selection.append('text')
+			.text('50%')
+			.attr({
+				'y':axisOffset,
+				'text-anchor':'middle',
+				'x':scale(0.5)
+			});
+
+		// yes value
+		selection.append('text')
+			.text(function(d){ return pct(d.pctyes)})
+			.attr({
+				'y':barYOffset + barHeight + valueOffset
+			});
+
+		// no value
+		selection.append('text')
+			.text(function(d){ return pct(d.pctno)})
+			.attr({
+				'y':barYOffset + barHeight + valueOffset,
+				'text-anchor':'end',
+				'x':scale(1)
+			})
+
+		//time stamp
+		selection.append('text')
+			.text(timestamp)
+			.attr({
+				'y':height - (margin.bottom + margin.top),
+				'x':width - (margin.left + margin.right),
+				'text-anchor':'end'
+			})
+	}
+
+</script>
+</html>
