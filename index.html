@@ -39,7 +39,9 @@
 
 	d3.json('http://bertha.ig.ft.com/republish/publish/ig/0Ak6OnV5xs-BudHpMQU9ENlgzR1VNNDFBZk9iZFlpNnc/basic,fullresults',gotData);
 
-	var timestamp = d3.time.format("%H:%M - %B %d %Y")(new Date());
+	var date = new Date();
+	var timestamp = d3.time.format("%H:%M - %B %d %Y")(date);
+	var filetime = d3.time.format(" (%H%M - %B %d %Y)")(date);
 
 	function gotData(data){
 		var div = d3.select('body').selectAll('div')
@@ -63,7 +65,7 @@
 						}
 					}).call(resultBar);
 
-		div.append('a').text( function(d){ return 'save ' + d.authoritylabel + '.png'; } ).attr({
+		div.append('a').text( function(d){ return 'save ' + d.authoritylabel + filetime + '.png'; } ).attr({
 			'href':function(d){
 				var serializer = new XMLSerializer(),
 			    SVGString = serializer.serializeToString(document.getElementById( d.code )),
@@ -72,7 +74,7 @@
 				return canvas.toDataURL();
 			},
 			'id':function(d){ return 'button-' + d.code },
-			'download':function(d){ return d.authoritylabel + '.png'} 
+			'download':function(d){ return d.authoritylabel + filetime + '.png'} 
 		});
 	}
 
