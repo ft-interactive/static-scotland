@@ -56,7 +56,14 @@
 			'id':function(d){'button-' + d.code} 
 		}).on("click", function(e) {
 		  console.log("saving...",e.code);
-		  d3.event.stopPropagation();
+		  var serializer = new XMLSerializer(),
+		  SVGString = serializer.serializeToString(document.getElementById(e.code)),
+		  
+		  canvas = document.getElementById('render-canvas');
+
+		  canvg(canvas, SVGString);
+		  document.location = canvas.toDataURL();
+		  //d3.event.stopPropagation();
 		});
 	}
 
