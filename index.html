@@ -2,8 +2,13 @@
 <head>
 	<title>static graphics with timestamps</title>
 	<style type="text/css">
-		svg{
-			border:solid 1px #000;
+		@font-face{ 
+			font-family: 'BentonSans';
+			src: url('http://interactivegraphics.ft-static.com/inc/fonts/BentonSansLight.woff') format('woff'),
+		}
+
+		.render-canvas{
+			display: none;
 		}
 	</style>
 	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/rgbcolor.js"></script> 
@@ -13,7 +18,6 @@
 </head>
 <body>
 <h1>Static poll graphics with timestamps.</h1>
-<canvas id="render-canvas"></canvas>
 </body>
 <script type="text/javascript">
 	var width = 600, height = 150,
@@ -23,6 +27,7 @@
 	backgroundBarColour = '#999',
 	yesColour = '#009',
 	noColour = '#900',
+	ftPink = '#FFF0e1',
 	tickOverlap = 5,
 	subtitleOffset = 20,
 	axisOffset = barYOffset - 10,
@@ -31,17 +36,21 @@
 
 	d3.json('http://bertha.ig.ft.com/republish/publish/ig/0Ak6OnV5xs-BudHpMQU9ENlgzR1VNNDFBZk9iZFlpNnc/basic,fullresults',gotData);
 
-	d3.select('canvas#render-canvas').attr({
-		width:width,
-		height:height
-	});
-
 	var timestamp = d3.time.format("%H:%M - %B %d %Y")(new Date());
-	console.log(timestamp);
+
 	function gotData(data){
 		var div = d3.select('body').selectAll('div')
-			.data(data.fullresults.filter(function(d){ console.log(d.authoritylabel); return (d.authoritylabel !== null); }))
+			.data(data.fullresults.filter(function(d){ return (d.authoritylabel !== null); }))
 			.enter().append('div');
+
+		div.append('canvas').attr({
+			'height':height,
+			'width':width,
+			'id':function(d){
+				return 'render-canvas-' + d.code
+			},
+			'class':'render-canvas'
+		})
 
 		div.append('svg').attr({
 						'width':width,
@@ -51,19 +60,16 @@
 						}
 					}).call(resultBar);
 
-		div.append('a').text( function(d){ return 'save ' + d.authoritylabel; } ).attr({
-			'href':'#',
-			'id':function(d){'button-' + d.code} 
-		}).on("click", function(e) {
-		  console.log("saving...",e.code);
-		  var serializer = new XMLSerializer(),
-		  SVGString = serializer.serializeToString(document.getElementById(e.code)),
-		  
-		  canvas = document.getElementById('render-canvas');
-
-		  canvg(canvas, SVGString);
-		  document.location = canvas.toDataURL();
-		  //d3.event.stopPropagation();
+		div.append('a').text( function(d){ return 'save ' + d.authoritylabel + '.png'; } ).attr({
+			'href':function(d){
+				var serializer = new XMLSerializer(),
+			    SVGString = serializer.serializeToString(document.getElementById( d.code )),
+				canvas = document.getElementById('render-canvas-'+d.code);
+				canvg( canvas, SVGString );
+				return canvas.toDataURL();
+			},
+			'id':function(d){ return 'button-' + d.code },
+			'download':function(d){ return d.authoritylabel + '.png'} 
 		});
 	}
 
@@ -72,6 +78,16 @@
 	}
 
 	function resultBar(selection){
+		//background
+		selection.append('rect')
+			.attr({	//overlapping the edge of thecanvas to avoid aliasing effect
+				width:width + 10,
+				height:height + 10,
+				x:-5,
+				y:-5,
+				fill:ftPink
+			})
+
 		//scale
 		var scale = d3.scale.linear()
 			.domain( [0,1] )
@@ -178,10 +194,14 @@
 		selection.append('text')
 			.text(timestamp)
 			.attr({
-				'y':height - (margin.bottom + margin.top),
+				'y':height - (margin.bottom + margin.top + 3), //a few extra pixels to give the descenders clearance
 				'x':width - (margin.left + margin.right),
 				'text-anchor':'end'
 			})
+
+		selection.selectAll('text').attr({
+			'font-face':'BentonSans'
+		})
 	}
 
 </script>
