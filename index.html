@@ -12,22 +12,7 @@
 			margin-bottom: 50px;
 		}
 		.tick{
-            shape-rendering:crispEdges;
-        }
-        .bar-label{
-            fill: #43423E;
-            font-size: 1.125em;
-        }
-        .bar-sub-label{
-            font-size: 0.75em;
-            fill: #74736C;
-        }
-        .value{
-            font-size: 0.75em;
-        }
-        .time-stamp{
-            font-size: 0.6375em;
-            fill: #A7A59B;
+            /*shape-rendering:crispEdges;*/
         }
 		.render-canvas{
 			display: none;
@@ -43,7 +28,7 @@
 </body>
 <script type="text/javascript">
 	var width = 600, height = 160,
-	margin = { top:20, left:10,bottom:0,right:10}
+	margin = { top:20, left:10,bottom:0,right:22}
 	barHeight = 30,
 	barYOffset = 60,
 	backgroundBarColour = '#999',
@@ -127,13 +112,15 @@
 		selection.append('text').text(function(d){
 			return d.authoritylabel;
 		})
-		.attr('class','bar-label');
+		.attr({
+			'style': 'fill:#43423E; font-size:18px;'
+        });
 
 		selection.append('text').text(function(d){
 			return 'Turnout ' + pct(d.turnout) + ' (' + bigNumber(d.votestotal) + ' votes)';
 		}).attr({
 			'y':subtitleOffset,
-            'class': 'bar-sub-label'
+            'style': 'fill:#74736C; font-size:12px'
 		});
 
 		//subtitle
@@ -185,7 +172,7 @@
             .text('YES')
             .attr({
                 'y':axisOffset,
-                'class':'value'
+                'style': 'fill:#74736C; font-size:12px'
             })
         //NO
         selection.append('text')
@@ -194,7 +181,7 @@
                 'y':axisOffset,
                 'text-anchor':'end',
                 'x':scale(1),
-                'class':'value'
+                'style': 'fill:#74736C; font-size:12px'
             });
         
         //50%
@@ -204,7 +191,7 @@
                 'y':axisOffset,
                 'text-anchor':'middle',
                 'x':scale(0.5),
-                'class':'value'
+                'style': 'fill:#74736C; font-size:12px'
             });
 
 		// yes value
@@ -212,7 +199,7 @@
 			.text(function(d){ return pct(d.pctyes)})
 			.attr({
 				'y':barYOffset + barHeight + valueOffset,
-                'class':'value'
+                'style': 'fill:#74736C; font-size:12px'
 			});
 
 		// no value
@@ -222,22 +209,22 @@
 				'y':barYOffset + barHeight + valueOffset,
 				'text-anchor':'end',
 				'x':scale(1),
-                'class':'value'
+                'style': 'fill:#74736C; font-size:12px'
 			})
 
 		//time stamp
 		selection.append('text')
 			.text(timestamp)
 			.attr({
-				'y':height - (margin.bottom + margin.top + 3), //a few extra pixels to give the descenders clearance
-				'x':width - (margin.left + margin.right) + timestampXOffset,
+				'y':margin.top, //a few extra pixels to give the descenders clearance
+				'x':width - (margin.left + margin.right),
 				'text-anchor':'end',
-                'class': 'time-stamp'
+                'style': 'font-size: 11px; fill: #A7A59B;'
 			});
 
 			//Logo watermark
 		selection.append('g').attr({
-			'transform':'translate(' + (width - 36) + ',' + (height - 36)  + ') scale(0.75, 0.75)'
+			'transform':'translate(' + (width - 44) + ',' + (height - 40)  + ')'
 		}).append('path')
 			.attr({
 				'fill':logoFill,
@@ -245,8 +232,7 @@
 			});
 
 		selection.selectAll('text').attr({
-            'font-family':'BentonSans',
-            'fill': '#74736C'
+            'font-family':'BentonSans'
         })
 	}
 
